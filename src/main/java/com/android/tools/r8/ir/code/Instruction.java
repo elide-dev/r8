@@ -133,7 +133,7 @@ public abstract class Instruction
   }
 
   public void setPosition(Position position, InternalOptions options) {
-    if (instructionTypeCanThrow() || options.debug) {
+    if (instructionTypeCanThrow() || options.retainInstructionPositions()) {
       setPosition(position);
     } else {
       setPosition(Position.none());

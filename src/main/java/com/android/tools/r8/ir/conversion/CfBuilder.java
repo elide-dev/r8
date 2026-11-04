@@ -580,7 +580,8 @@ public class CfBuilder {
             && !(currentPosition.isNone()
                 && position.isSyntheticPosition()
                 && !position.hasCallerPosition())
-            && (appView.options().debug || instruction.instructionTypeCanThrow());
+            && (appView.options().retainInstructionPositions()
+                || instruction.instructionTypeCanThrow());
     if (!didLocalsChange && !didPositionChange) {
       return;
     }

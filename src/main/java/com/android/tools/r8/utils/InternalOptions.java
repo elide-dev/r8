@@ -1142,6 +1142,14 @@ public class InternalOptions implements GlobalKeepInfoConfiguration {
   public boolean skipIR = false;
 
   public boolean debug = false;
+  // A downstream AOT compiler consumes classfile line positions directly rather
+  // than reconstructing stack traces with Retrace. This does not enable debug
+  // compilation or disable release optimizations.
+  public boolean retainClassFileInstructionPositions = false;
+
+  public boolean retainInstructionPositions() {
+    return debug || (isGeneratingClassFiles() && retainClassFileInstructionPositions);
+  }
 
   public CompilationMode getCompilationMode() {
     return debug ? CompilationMode.DEBUG : CompilationMode.RELEASE;

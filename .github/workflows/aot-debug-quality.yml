@@ -15,6 +15,16 @@ jobs:
         with:
           distribution: temurin
           java-version: '25'
+      - name: Install the pinned upstream download tools
+        env:
+          DEPOT_TOOLS_UPDATE: '0'
+        run: |
+          git init "$RUNNER_TEMP/depot_tools"
+          git -C "$RUNNER_TEMP/depot_tools" remote add origin https://chromium.googlesource.com/chromium/tools/depot_tools.git
+          git -C "$RUNNER_TEMP/depot_tools" fetch --depth=1 origin 354244c3546404447725ce3e520d6d55b086674b
+          git -C "$RUNNER_TEMP/depot_tools" checkout --detach FETCH_HEAD
+          echo "$RUNNER_TEMP/depot_tools" >> "$GITHUB_PATH"
+          echo 'DEPOT_TOOLS_UPDATE=0' >> "$GITHUB_ENV"
       - name: Build the normal unobfuscated R8 artifact
         run: python3 tools/gradle.py --java-home "$JAVA_HOME" --no-internal r8 --no-daemon --max-workers=2
       - name: Check optimized AOT instruction positions

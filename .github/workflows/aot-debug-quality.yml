@@ -1,0 +1,35 @@
+name: AOT debug quality
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  qualify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad
+        with:
+          distribution: temurin
+          java-version: '25'
+      - name: Build the normal unobfuscated R8 artifact
+        run: python3 tools/gradle.py --java-home "$JAVA_HOME" --no-internal r8 --no-daemon --max-workers=2
+      - name: Check optimized AOT instruction positions
+        run: python3 tools/gradle.py --java-home "$JAVA_HOME" --no-internal :tests_java_8:test --tests com.android.tools.r8.cf.AotInstructionPositionsTest --no-daemon --max-workers=2
+      - name: Record producer provenance
+        run: |
+          mkdir -p aot-debug-quality
+          cp build/libs/r8.jar aot-debug-quality/r8.jar
+          git rev-parse HEAD > aot-debug-quality/SOURCE_REVISION
+          (cd aot-debug-quality && sha256sum r8.jar > SHA256SUMS)
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always()
+        with:
+          name: r8-aot-debug-quality-${{ github.sha }}
+          path: |
+            aot-debug-quality/
+            d8_r8/test_modules/tests_java_8/build/test-results/test/TEST-com.android.tools.r8.cf.AotInstructionPositionsTest.xml
+          if-no-files-found: error
